@@ -34,7 +34,7 @@ export async function getWallet(userId: string): Promise<Wallet> {
       
       // Auto-provision wallet using existing user metrics
       const userProfile = await getUserProfile(userId);
-      const initialBalance = userProfile ? userProfile.balance : 100.00;
+      const initialBalance = userProfile ? userProfile.balance : 0.00;
       const initialSpent = userProfile ? userProfile.totalSpent : 0.00;
       
       const newWallet: Wallet = {
@@ -61,7 +61,7 @@ export async function getWallet(userId: string): Promise<Wallet> {
   let memWallet = memoryWalletDb.wallets.get(userId);
   if (!memWallet) {
     const userProfile = await getUserProfile(userId);
-    const initialBalance = userProfile ? userProfile.balance : 100.00;
+    const initialBalance = userProfile ? userProfile.balance : 0.00;
     const initialSpent = userProfile ? userProfile.totalSpent : 0.00;
 
     memWallet = {
@@ -211,9 +211,9 @@ export async function executeBalanceUpdate(
         currentWallet = {
           userId,
           userEmail: currentUser?.email || 'user@zenitsmm.com',
-          balance: currentUser ? currentUser.balance : 100.00,
+          balance: currentUser ? currentUser.balance : 0.00,
           lockedBalance: 0,
-          totalDeposit: currentUser ? currentUser.balance : 100.00,
+          totalDeposit: currentUser ? currentUser.balance : 0.00,
           totalSpent: currentUser ? currentUser.totalSpent : 0.00,
           totalRefund: 0,
           totalBonus: 0,

@@ -155,38 +155,6 @@ class InMemoryStore {
     initialCategories.forEach((cat) => this.categories.set(cat.id, cat));
     initialServices.forEach((srv) => this.services.set(srv.id, srv));
 
-    this.users.set('sandbox_user_123', {
-      uid: 'sandbox_user_123',
-      email: 'sandbox@zenitsmm.com',
-      name: 'Sandbox Explorer',
-      displayName: 'Sandbox Explorer',
-      phone: '+15550199',
-      role: 'User',
-      balance: 250.00,
-      totalSpent: 45.50,
-      totalOrders: 3,
-      status: 'Active',
-      emailVerified: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    this.users.set('sandbox_admin_123', {
-      uid: 'sandbox_admin_123',
-      email: 'admin@zenitsmm.com',
-      name: 'Zenit Director',
-      displayName: 'Zenit Director',
-      phone: '+15550100',
-      role: 'Admin',
-      balance: 10000.00,
-      totalSpent: 0.00,
-      totalOrders: 0,
-      status: 'Active',
-      emailVerified: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
     this.settings = {
       websiteName: 'Zenit SMM',
       maintenanceMode: false,
@@ -200,40 +168,10 @@ class InMemoryStore {
       seoKeywords: 'smm, panel, followers, likes, views'
     };
 
-    const initialLogs: SystemLog[] = [
-      {
-        id: 'log-1',
-        type: 'login',
-        userId: 'sandbox_user_123',
-        userEmail: 'sandbox@zenitsmm.com',
-        action: 'User logged in successfully',
-        ipAddress: '127.0.0.1',
-        userAgent: 'Mozilla/5.0 Chrome/120.0',
-        createdAt: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: 'log-2',
-        type: 'admin',
-        userId: 'sandbox_admin_123',
-        userEmail: 'admin@zenitsmm.com',
-        action: 'Admin initialized master control panel',
-        ipAddress: '127.0.0.1',
-        userAgent: 'Mozilla/5.0 Chrome/120.0',
-        createdAt: new Date(Date.now() - 1800000).toISOString()
-      }
-    ];
+    const initialLogs: SystemLog[] = [];
     initialLogs.forEach(l => this.logs.set(l.id, l));
 
     const initialNotifs: SystemNotification[] = [
-      {
-        id: 'ntf-1',
-        title: 'Welcome to Zenit SMM',
-        message: 'Your account balance has been credited with welcome funds.',
-        read: false,
-        type: 'success',
-        userId: 'sandbox_user_123',
-        createdAt: new Date().toISOString()
-      },
       {
         id: 'ntf-2',
         title: 'New Support Ticket Created',

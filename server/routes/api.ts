@@ -99,7 +99,7 @@ router.get('/users/:uid', requireAuth, async (req: AuthenticatedRequest, res: Re
         email: req.user?.email || 'user@zenitsmm.com',
         phone: '',
         role: 'User',
-        balance: 100.00, // Standard $100 starter credit for evaluation
+        balance: 0.00, // Starting wallet balance of 0.00
         totalSpent: 0,
         totalOrders: 0,
         status: 'Active',
@@ -133,7 +133,7 @@ router.post('/users', requireAuth, async (req: AuthenticatedRequest, res: Respon
         email: req.user?.email || 'user@zenitsmm.com',
         phone: phone || '',
         role: 'User',
-        balance: 100.00, // Standard $100 starter credit for evaluation
+        balance: 0.00, // Starting wallet balance of 0.00
         totalSpent: 0,
         totalOrders: 0,
         status: 'Active',
@@ -1393,7 +1393,7 @@ router.post('/users/create', requireAdmin, async (req: AuthenticatedRequest, res
       email: email.trim(),
       phone: '',
       role: role || 'User',
-      balance: balance !== undefined ? Number(balance) : 100.00,
+      balance: balance !== undefined ? Number(balance) : 0.00,
       totalSpent: 0,
       totalOrders: 0,
       status: status || 'Active',
