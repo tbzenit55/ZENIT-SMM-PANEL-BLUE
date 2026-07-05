@@ -1,0 +1,6 @@
+{
+  "name": "ZENIT SMM Panel",
+  "description": "A premium dark-themed SMM Panel featuring a professional user dashboard, administrative controls, and secure full-stack REST API with Firebase Integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

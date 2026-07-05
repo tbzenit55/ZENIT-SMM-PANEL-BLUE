@@ -1,0 +1,222 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Represents an SMM panel member user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The Firebase Authentication unique user ID" },
+        "name": { "type": "string", "description": "Full name of the user" },
+        "email": { "type": "string", "description": "Email address of the user" },
+        "phone": { "type": "string", "description": "Phone number of the user" },
+        "role": { "type": "string", "enum": ["Super Admin", "Admin", "User"], "description": "The security and access role of the user" },
+        "balance": { "type": "number", "description": "Current funds available in USD" },
+        "totalSpent": { "type": "number", "description": "Total spent since registration in USD" },
+        "totalOrders": { "type": "integer", "description": "Total quantity of SMM orders placed" },
+        "status": { "type": "string", "enum": ["Active", "Suspended", "Banned"], "description": "User account security state" },
+        "emailVerified": { "type": "boolean", "description": "Whether the user email is verified" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account registration timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Profile last updated timestamp" },
+        "lastLogin": { "type": "string", "format": "date-time", "description": "Last sign-in timestamp" }
+      },
+      "required": ["uid", "email", "role", "balance", "totalSpent", "totalOrders", "status", "emailVerified", "createdAt", "updatedAt"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Represents an SMM service category",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Category unique ID" },
+        "name": { "type": "string", "description": "Display name of the category" },
+        "icon": { "type": "string", "description": "Lucide icon name or emoji" },
+        "description": { "type": "string", "description": "Short description of the category" },
+        "sortOrder": { "type": "integer", "description": "Custom order for list sorting" },
+        "status": { "type": "string", "enum": ["active", "disabled"], "description": "Availability state" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "name", "sortOrder", "status"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Represents a specific SMM social media service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Service unique ID" },
+        "categoryId": { "type": "string", "description": "Category ID the service belongs to" },
+        "category": { "type": "string", "description": "Category name or ID the service belongs to" },
+        "providerId": { "type": "string", "description": "External provider identifier" },
+        "providerServiceId": { "type": "string", "description": "External provider service package ID" },
+        "name": { "type": "string", "description": "Display name of the SMM service" },
+        "description": { "type": "string", "description": "Rich description, speed details, quality checks and refill support details" },
+        "price": { "type": "number", "description": "Price per 1000 deliverables in USD" },
+        "ratePerThousand": { "type": "number", "description": "Price per 1000 deliveries in USD" },
+        "min": { "type": "integer", "description": "Minimum allowed order size" },
+        "minQuantity": { "type": "integer", "description": "Minimum allowed quantity per order" },
+        "max": { "type": "integer", "description": "Maximum allowed order size" },
+        "maxQuantity": { "type": "integer", "description": "Maximum allowed quantity per order" },
+        "averageTime": { "type": "string", "description": "Average completion/delivery time" },
+        "dripfeed": { "type": "boolean", "description": "Drip feed capability status" },
+        "refill": { "type": "boolean", "description": "Refill coverage status" },
+        "cancel": { "type": "boolean", "description": "Cancellability status" },
+        "status": { "type": "string", "enum": ["active", "disabled"], "description": "Availability status of the service" },
+        "sortOrder": { "type": "integer", "description": "Custom order for list sorting" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "categoryId", "name", "price", "min", "max", "status", "createdAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Represents an SMM delivery order placed by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Order unique ID" },
+        "userId": { "type": "string", "description": "The UID of the user who placed this order" },
+        "userEmail": { "type": "string", "description": "Email address of the user who ordered" },
+        "serviceId": { "type": "string", "description": "ID of the ordered SMM service" },
+        "serviceName": { "type": "string", "description": "Name of the SMM service" },
+        "categoryName": { "type": "string", "description": "Category name" },
+        "link": { "type": "string", "description": "Target social media URL or profile handle" },
+        "quantity": { "type": "integer", "description": "Deliverable quantity" },
+        "charge": { "type": "number", "description": "Total order price in USD" },
+        "startCount": { "type": "integer", "description": "SMM starter counter reading" },
+        "remains": { "type": "integer", "description": "Remaining deliverables" },
+        "status": { "type": "string", "enum": ["pending", "processing", "inprogress", "completed", "partial", "canceled"], "description": "Order state" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Order submission timestamp" }
+      },
+      "required": ["id", "userId", "userEmail", "serviceId", "serviceName", "categoryName", "link", "quantity", "charge", "startCount", "remains", "status", "createdAt"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Represents a user deposit payment transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Payment transaction unique ID" },
+        "userId": { "type": "string", "description": "The UID of the user who made the deposit" },
+        "userEmail": { "type": "string", "description": "Email address of the user" },
+        "amount": { "type": "number", "description": "Deposit amount in USD" },
+        "method": { "type": "string", "enum": ["stripe", "paypal", "crypto", "perfect_money"], "description": "Payment processor option" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"], "description": "Transaction payment status" },
+        "transactionId": { "type": "string", "description": "Unique transaction ID from payment provider" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Transaction date-time" }
+      },
+      "required": ["id", "userId", "userEmail", "amount", "method", "status", "createdAt"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Represents a support ticket",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Ticket unique ID" },
+        "userId": { "type": "string", "description": "The UID of the user who opened this ticket" },
+        "userEmail": { "type": "string", "description": "Email address of the user" },
+        "subject": { "type": "string", "description": "Support topic or subject" },
+        "message": { "type": "string", "description": "Initial message details" },
+        "status": { "type": "string", "enum": ["pending", "answered", "closed"], "description": "Support status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "replies": { "type": "array", "description": "Array of reply objects" }
+      },
+      "required": ["id", "userId", "userEmail", "subject", "message", "status", "createdAt", "replies"]
+    },
+    "Provider": {
+      "title": "Provider",
+      "description": "Represents an SMM Service Provider API connection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Provider unique ID" },
+        "name": { "type": "string", "description": "Name of SMM provider" },
+        "apiUrl": { "type": "string", "description": "SMM Provider API base URL" },
+        "apiKey": { "type": "string", "description": "API secret token/key" },
+        "status": { "type": "string", "enum": ["active", "disabled"], "description": "Availability state of this provider" },
+        "currency": { "type": "string", "description": "Provider's pricing currency (usually USD)" },
+        "priority": { "type": "integer", "description": "Priority order for choosing provider" },
+        "timeout": { "type": "integer", "description": "Request timeout in milliseconds" },
+        "rateMultiplier": { "type": "number", "description": "Surcharge multiplier for cost rate mapping" },
+        "supportsRefill": { "type": "boolean", "description": "Refill endpoint availability" },
+        "supportsCancel": { "type": "boolean", "description": "Cancel endpoint availability" },
+        "lastSync": { "type": "string", "format": "date-time", "description": "Last manual/automated catalog sync" },
+        "lastHealthCheck": { "type": "string", "format": "date-time", "description": "Last response ping check" },
+        "successCount": { "type": "integer", "description": "Successful API operations counter" },
+        "failedCount": { "type": "integer", "description": "Failed API operations counter" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Registration date-time" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last modified timestamp" }
+      },
+      "required": ["id", "name", "apiUrl", "apiKey", "status", "priority", "timeout", "rateMultiplier", "supportsRefill", "supportsCancel", "successCount", "failedCount", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Represents an SMM panel admin operation audit trail",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "category": { "type": "string" },
+        "details": { "type": "object" },
+        "ipAddress": { "type": "string" },
+        "browser": { "type": "string" },
+        "device": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "action", "category", "createdAt"]
+    },
+    "SecurityLog": {
+      "title": "SecurityLog",
+      "description": "Represents SMM platform security incidents or session overrides",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "severity": { "type": "string" },
+        "details": { "type": "object" },
+        "ipAddress": { "type": "string" },
+        "browser": { "type": "string" },
+        "device": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "action", "severity", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles collection"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Service categories collection"
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "SMM services list collection"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Placed orders collection"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Deposited fund transactions collection"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Support ticket collection"
+    },
+    "/providers/{providerId}": {
+      "schema": "Provider",
+      "description": "SMM API Providers collection"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Administrative operation audit logs"
+    },
+    "/security_logs/{logId}": {
+      "schema": "SecurityLog",
+      "description": "Security incident logs"
+    }
+  }
+}
