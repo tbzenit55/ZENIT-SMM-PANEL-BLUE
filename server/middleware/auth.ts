@@ -13,18 +13,6 @@ export interface AuthenticatedRequest extends Request {
 export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    // Check if we are running in sandbox/no-credentials mode to allow development bypass
-    const isConfigured = !!process.env.FIREBASE_PROJECT_ID;
-    if (!isConfigured) {
-      // Sandbox bypass - assign a default mock user profile to allow full testing
-      req.user = {
-        uid: req.headers['x-sandbox-uid'] as string || 'sandbox_user_123',
-        email: req.headers['x-sandbox-email'] as string || 'sandbox@zenitsmm.com',
-        role: req.headers['x-sandbox-role'] === 'admin' ? 'Admin' : 'User',
-        displayName: 'Sandbox Explorer',
-      };
-      return next();
-    }
     return res.status(401).json({ error: 'Unauthenticated. Missing bearer token.' });
   }
 

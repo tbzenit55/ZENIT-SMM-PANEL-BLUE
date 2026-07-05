@@ -43,9 +43,6 @@ export default function NotificationCenter() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        // Fallback for sandbox mode
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await fetch('/api/notifications', { headers });
@@ -67,8 +64,6 @@ export default function NotificationCenter() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await fetch('/api/notifications/settings', { headers });
@@ -112,8 +107,6 @@ export default function NotificationCenter() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await RouterFetch(`/api/notifications/${id}/read`, 'POST', headers);
@@ -135,8 +128,6 @@ export default function NotificationCenter() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await RouterFetch('/api/notifications/read-all', 'POST', headers);
@@ -158,8 +149,6 @@ export default function NotificationCenter() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await RouterFetch(`/api/notifications/${id}`, 'DELETE', headers);
@@ -179,8 +168,6 @@ export default function NotificationCenter() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await RouterFetch('/api/notifications/settings', 'POST', headers, settings);

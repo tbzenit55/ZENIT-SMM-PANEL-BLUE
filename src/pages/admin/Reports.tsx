@@ -56,8 +56,6 @@ export default function AdminReports() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       // Fetch the full analytics payload

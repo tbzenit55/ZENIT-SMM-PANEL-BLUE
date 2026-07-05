@@ -34,35 +34,19 @@ function MainAppRouter() {
   const { currentUser, userProfile, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Handle local sandbox bypass session loading
-  useEffect(() => {
-    const sandboxSession = localStorage.getItem('sandbox_session');
-    if (!currentUser && sandboxSession) {
-      // Sandbox bypass active
-      console.log('Active sandbox development bypass detected.');
-    }
-  }, [currentUser]);
-
   if (loading) {
     return <Loader fullScreen />;
   }
 
-  // Check if session exists (either Firebase user OR local developer sandbox session)
-  const isSandboxActive = !!localStorage.getItem('sandbox_session');
-  const isEmailVerified = currentUser ? currentUser.emailVerified : true;
-  const isAuthenticated = (!!currentUser && isEmailVerified) || isSandboxActive;
+  // Use ONLY Firebase Authentication session
+  const isAuthenticated = !!currentUser;
 
   if (!isAuthenticated) {
     return <Auth />;
   }
 
   // Retrieve user role for admin routing
-  let role = userProfile?.role || 'User';
-  if (isSandboxActive && !userProfile) {
-    const session = JSON.parse(localStorage.getItem('sandbox_session') || '{}');
-    role = session.role || 'User';
-  }
-
+  const role = userProfile?.role || 'User';
   const isAdmin = role === 'Admin' || role === 'Super Admin' || role === 'admin';
 
   // Toggle user vs admin layout based on selected tab

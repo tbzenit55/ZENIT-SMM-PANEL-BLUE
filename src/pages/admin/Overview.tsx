@@ -70,8 +70,6 @@ export function Overview() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await fetch('/api/admin/analytics', { headers });

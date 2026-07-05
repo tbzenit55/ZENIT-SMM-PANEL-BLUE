@@ -67,8 +67,6 @@ export default function AdminNotifications() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const [notifsRes, tmplsRes] = await Promise.all([
@@ -103,8 +101,6 @@ export default function AdminNotifications() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       // Prepare target array if recipient is multiple
@@ -171,8 +167,6 @@ export default function AdminNotifications() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await fetch('/api/admin/notifications/templates', {
@@ -212,8 +206,6 @@ export default function AdminNotifications() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await fetch(`/api/admin/notifications/templates/${id}`, {
@@ -239,8 +231,6 @@ export default function AdminNotifications() {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['x-sandbox-user'] = 'sandbox_user_123';
       }
 
       const res = await fetch(`/api/admin/notifications/${id}`, {
