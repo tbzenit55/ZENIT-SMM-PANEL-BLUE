@@ -2241,6 +2241,11 @@ router.post('/admin/payment-methods', requireAdmin, async (req: AuthenticatedReq
     return res.status(400).json({ error: 'ID and Name are required fields.' });
   }
 
+  const allowedIds = ['upi', 'phonepe', 'gpay', 'paytm'];
+  if (!allowedIds.includes(id)) {
+    return res.status(400).json({ error: 'Only UPI, PhonePe, Google Pay, and Paytm payment methods can be added or updated.' });
+  }
+
   try {
     const existing = await getCustomPaymentMethods();
     const existingMethod = existing.find(m => m.id === id);

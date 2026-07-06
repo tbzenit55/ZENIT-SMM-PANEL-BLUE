@@ -576,11 +576,10 @@ export function SettingsPage() {
                     onChange={(e) => setEditingMethod({ ...editingMethod, logo: e.target.value })}
                     className="w-full bg-[#05070B] border border-blue-900/20 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500/50 cursor-pointer"
                   >
-                    <option value="Smartphone">Smartphone (PhonePe, Paytm, UPI)</option>
-                    <option value="QrCode">QrCode (Static/Dynamic QR Scanner)</option>
-                    <option value="Coins">Coins (Binance Pay, USDT Crypto)</option>
-                    <option value="CreditCard">CreditCard (Stripe, Cards, Gateways)</option>
-                    <option value="Wallet">Wallet (Perfect Money, Bank Transfers)</option>
+                    <option value="Smartphone">Smartphone (PhonePe, Paytm, Google Pay, UPI)</option>
+                    <option value="QrCode">QrCode (UPI QR Code Scanner)</option>
+                    <option value="CreditCard">CreditCard (Cards & Gateways)</option>
+                    <option value="Wallet">Wallet (Standard)</option>
                   </select>
                 </div>
 
@@ -756,7 +755,7 @@ export function SettingsPage() {
                       minDeposit: 10,
                       maxDeposit: 5000,
                       processingTime: 'Instant',
-                      instructions: 'Step 1: Transfer funds to UPI/Address.\nStep 2: Copy UTR/Ref code.\nStep 3: Enter ref code below and submit.',
+                      instructions: 'Step 1: Transfer funds to UPI ID.\nStep 2: Copy the 12-digit UTR No.\nStep 3: Enter the UTR and amount below and submit.',
                       upiId: '',
                       qrImageUrl: '',
                       sortOrder: paymentMethods.length,

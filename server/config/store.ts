@@ -686,161 +686,41 @@ const initialPaymentMethods: CustomPaymentMethod[] = [
     isFutureReady: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'static_qr',
-    name: 'Static QR Code',
-    description: 'Scan static QR code to make payment',
-    logo: 'QrCode',
-    enabled: true,
-    minDeposit: 5,
-    maxDeposit: 5000,
-    processingTime: '10-20 Minutes',
-    instructions: '1. Scan the static QR image using any payment application.\n2. Pay the desired amount.\n3. Enter your Transaction Reference ID and submit.',
-    qrImageUrl: 'https://images.unsplash.com/photo-1627856013091-fed6e4e30025?auto=format&fit=crop&q=80&w=300',
-    sortOrder: 5,
-    isFutureReady: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'dynamic_qr',
-    name: 'Dynamic QR (Future Ready)',
-    description: 'Generate dynamic QR on-demand for invoice amount',
-    logo: 'QrCode',
-    enabled: false,
-    minDeposit: 10,
-    maxDeposit: 10000,
-    processingTime: 'Instant (Future Ready)',
-    instructions: 'This payment method is a placeholder for future dynamic integrations.',
-    sortOrder: 6,
-    isFutureReady: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'binance_pay',
-    name: 'Binance Pay',
-    description: 'Pay instantly with zero gas fees using Binance Pay ID',
-    logo: 'Coins',
-    enabled: true,
-    minDeposit: 10,
-    maxDeposit: 50000,
-    processingTime: '5-10 Minutes',
-    instructions: '1. Send USDT/BUSD to Binance Pay ID: 882736154\n2. Copy your Binance Pay Order ID / Ref No.\n3. Enter the reference ID below and submit.',
-    upiId: 'Pay ID: 882736154',
-    sortOrder: 7,
-    isFutureReady: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'usdt_trc20',
-    name: 'USDT TRC20',
-    description: 'Fast crypto payments over Tron network',
-    logo: 'Coins',
-    enabled: true,
-    minDeposit: 20,
-    maxDeposit: 100000,
-    processingTime: '10-30 Minutes',
-    instructions: '1. Send USDT to TRC20 Address: TYX928hGhs83hH8whhShh9918hsjH\n2. Copy the TxID (Transaction Hash) from your wallet.\n3. Enter the transaction hash and amount below to submit.',
-    upiId: 'TYX928hGhs83hH8whhShh9918hsjH',
-    sortOrder: 8,
-    isFutureReady: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'usdt_bep20',
-    name: 'USDT BEP20',
-    description: 'Low-fee BSC crypto payments',
-    logo: 'Coins',
-    enabled: true,
-    minDeposit: 10,
-    maxDeposit: 100000,
-    processingTime: '5-15 Minutes',
-    instructions: '1. Send USDT to BEP20 Address: 0x82f9c8d7... (BSC Network)\n2. Enter your Transaction Hash (TxID) below.',
-    upiId: '0x82f9c8d7a12bc34de56fg78hi90jk12lm34no56p',
-    sortOrder: 9,
-    isFutureReady: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'razorpay',
-    name: 'Razorpay Gateway (Future)',
-    description: 'Razorpay business checkout API',
-    logo: 'CreditCard',
-    enabled: false,
-    minDeposit: 10,
-    maxDeposit: 10000,
-    processingTime: 'Instant (Future Ready)',
-    instructions: 'Future ready Razorpay Checkout integration placeholder.',
-    sortOrder: 10,
-    isFutureReady: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'phonepe_biz',
-    name: 'PhonePe Business API (Future)',
-    description: 'PhonePe merchant checkout integration',
-    logo: 'Smartphone',
-    enabled: false,
-    minDeposit: 10,
-    maxDeposit: 25000,
-    processingTime: 'Instant (Future Ready)',
-    instructions: 'Future ready PhonePe Business API checkout placeholder.',
-    sortOrder: 11,
-    isFutureReady: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'paytm_biz',
-    name: 'Paytm Business API (Future)',
-    description: 'Paytm payment gateway API',
-    logo: 'Smartphone',
-    enabled: false,
-    minDeposit: 10,
-    maxDeposit: 25000,
-    processingTime: 'Instant (Future Ready)',
-    instructions: 'Future ready Paytm Payment Gateway checkout placeholder.',
-    sortOrder: 12,
-    isFutureReady: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
   }
 ];
 
 export async function getCustomPaymentMethods(): Promise<CustomPaymentMethod[]> {
+  const allowedIds = ['upi', 'phonepe', 'gpay', 'paytm'];
   const isFirebase = initializeFirebaseAdmin();
+  let methods: CustomPaymentMethod[] = [];
   if (isFirebase) {
     try {
       const db = getAdminDb();
       const snapshot = await db.collection('payment_methods').get();
       if (!snapshot.empty) {
-        const methods = snapshot.docs.map((doc: any) => doc.data() as CustomPaymentMethod);
-        return methods.sort((a, b) => a.sortOrder - b.sortOrder);
+        methods = snapshot.docs.map((doc: any) => doc.data() as CustomPaymentMethod);
       } else {
         // Seed if empty
         console.log('Seeding initial payment methods to Firestore...');
         for (const m of initialPaymentMethods) {
           await db.collection('payment_methods').doc(m.id).set(m);
         }
-        return initialPaymentMethods.sort((a, b) => a.sortOrder - b.sortOrder);
+        methods = [...initialPaymentMethods];
       }
     } catch (err) {
       console.error('Error fetching custom payment methods from Firestore:', err);
     }
-  }
-
-  if (memoryDb.paymentMethods.size === 0) {
-    for (const m of initialPaymentMethods) {
-      memoryDb.paymentMethods.set(m.id, m);
+  } else {
+    if (memoryDb.paymentMethods.size === 0) {
+      for (const m of initialPaymentMethods) {
+        memoryDb.paymentMethods.set(m.id, m);
+      }
     }
+    methods = Array.from(memoryDb.paymentMethods.values());
   }
-  return Array.from(memoryDb.paymentMethods.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+  return methods
+    .filter(m => allowedIds.includes(m.id))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export async function saveCustomPaymentMethod(method: CustomPaymentMethod): Promise<void> {
