@@ -1,4 +1,5 @@
-import { getOrders, saveOrder, getProviders, refundUserBalance, saveSystemLog } from './store';
+import { getOrders, saveOrder, getProviders, saveSystemLog, saveAuditLog } from './store';
+import { refundUserBalance } from './walletStore';
 import { ProviderAdapter } from './providerAdapter';
 import { Order, OrderStatus } from '../../src/types';
 
@@ -123,6 +124,14 @@ export async function syncActiveOrders(): Promise<{ processed: number; updated: 
               action: `Order ${order.id} canceled/failed. Automatically refunded full charge of $${order.price.toFixed(4)} to user balance.`,
               createdAt: nowStr,
             });
+            await saveAuditLog({
+              id: `audit-sync-refund-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              userId: order.userId,
+              userEmail: order.userEmail,
+              action: `Order ${order.id} canceled/failed. Automatically refunded full charge of $${order.price.toFixed(4)} to user balance.`,
+              category: 'wallet',
+              createdAt: nowStr,
+            });
           } else if (targetStatus === 'refunded') {
             // Full refund
             await refundUserBalance(order.userId, order.price);
@@ -132,6 +141,14 @@ export async function syncActiveOrders(): Promise<{ processed: number; updated: 
               userId: order.userId,
               userEmail: order.userEmail,
               action: `Order ${order.id} refunded by provider. Automatically returned $${order.price.toFixed(4)} to user balance.`,
+              createdAt: nowStr,
+            });
+            await saveAuditLog({
+              id: `audit-sync-refund-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              userId: order.userId,
+              userEmail: order.userEmail,
+              action: `Order ${order.id} refunded by provider. Automatically returned $${order.price.toFixed(4)} to user balance.`,
+              category: 'wallet',
               createdAt: nowStr,
             });
           } else if (targetStatus === 'partial') {
@@ -147,6 +164,14 @@ export async function syncActiveOrders(): Promise<{ processed: number; updated: 
                   userId: order.userId,
                   userEmail: order.userEmail,
                   action: `Order ${order.id} returned as partial. Refunded $${refundAmount.toFixed(4)} for remaining ${order.remains}/${order.quantity} units.`,
+                  createdAt: nowStr,
+                });
+                await saveAuditLog({
+                  id: `audit-sync-partial-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                  userId: order.userId,
+                  userEmail: order.userEmail,
+                  action: `Order ${order.id} returned as partial. Refunded $${refundAmount.toFixed(4)} for remaining ${order.remains}/${order.quantity} units.`,
+                  category: 'wallet',
                   createdAt: nowStr,
                 });
               }

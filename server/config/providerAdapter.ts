@@ -256,4 +256,50 @@ export class ProviderAdapter {
 
     return true;
   }
+
+  /**
+   * Get multiple order statuses from SMM provider (multiStatus)
+   */
+  public static async getMultiStatus(
+    provider: Provider,
+    providerOrderIds: string[]
+  ): Promise<Record<string, {
+    status: string;
+    charge: number;
+    remains: number;
+    startCount: number;
+    error?: string;
+  }>> {
+    const data = await this.request(provider, 'status', {
+      orders: providerOrderIds.join(','),
+    });
+
+    if (!data || data.error) {
+      throw new Error(data?.error || 'Failed to fetch multiple SMM order statuses');
+    }
+
+    const results: Record<string, any> = {};
+    for (const orderId of providerOrderIds) {
+      const orderData = data[orderId];
+      if (orderData) {
+        if (orderData.error) {
+          results[orderId] = {
+            status: 'failed',
+            charge: 0,
+            remains: 0,
+            startCount: 0,
+            error: orderData.error,
+          };
+        } else {
+          results[orderId] = {
+            status: String(orderData.status || 'pending').toLowerCase(),
+            charge: parseFloat(orderData.charge || '0'),
+            remains: parseInt(orderData.remains || '0', 10),
+            startCount: parseInt(orderData.start_count || '0', 10),
+          };
+        }
+      }
+    }
+    return results;
+  }
 }

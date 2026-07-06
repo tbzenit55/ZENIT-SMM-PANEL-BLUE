@@ -551,10 +551,36 @@ router.post('/providers', requireAdmin, async (req: AuthenticatedRequest, res: R
     return res.status(400).json({ error: 'Missing name, apiUrl, or apiKey.' });
   }
 
+  // Validate API URL format
+  try {
+    const parsedUrl = new URL(apiUrl);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error();
+    }
+  } catch (_) {
+    return res.status(400).json({ error: 'Invalid API URL. Must be a valid HTTP or HTTPS URL.' });
+  }
+
+  // Validate API Key format
+  if (apiKey.trim().length < 4) {
+    return res.status(400).json({ error: 'Invalid API Key. Must be at least 4 characters long.' });
+  }
+
   try {
     const providerId = id || `prov-${Math.random().toString(36).substring(2, 9)}`;
     const existingProviders = await getProviders();
     const existing = existingProviders.find(p => p.id === providerId);
+
+    // Prevent duplicate provider URL or name
+    const isDuplicate = existingProviders.some(
+      p => p.id !== providerId && 
+      (p.apiUrl.toLowerCase().trim() === apiUrl.toLowerCase().trim() || 
+       p.name.toLowerCase().trim() === name.toLowerCase().trim())
+    );
+
+    if (isDuplicate) {
+      return res.status(400).json({ error: 'A provider with the same name or API URL already exists.' });
+    }
 
     const newProvider: Provider = {
       id: providerId,
@@ -820,6 +846,21 @@ router.post('/orders', requireAuth, async (req: AuthenticatedRequest, res: Respo
     if (isNaN(qty) || qty < minQty || qty > maxQty) {
       return res.status(400).json({
         error: `Quantity must be between ${minQty} and ${maxQty}.`
+      });
+    }
+
+    // Check for duplicate order within the last 30 seconds
+    const allRecentOrders = await getOrders();
+    const userRecentOrders = allRecentOrders.filter(
+      (o) => o.userId === uid && o.serviceId === serviceId && o.link === trimmedLink && o.quantity === qty
+    );
+    const thirtySecondsAgo = Date.now() - 30000;
+    const isDuplicateOrder = userRecentOrders.some(
+      (o) => o.status !== 'failed' && new Date(o.createdAt).getTime() > thirtySecondsAgo
+    );
+    if (isDuplicateOrder) {
+      return res.status(400).json({
+        error: 'Duplicate order detected. Please wait 30 seconds before placing the exact same order.'
       });
     }
 
