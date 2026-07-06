@@ -50,7 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email: currentUser?.email || 'user@zenitsmm.com',
         phone: '',
         role: 'User', // Default
-        balance: 150.00, // standard welcome balance demo/development
+        balance: 0.00, // starting wallet balance of 0.00
         totalSpent: 0,
         totalOrders: 0,
         status: 'Active',
