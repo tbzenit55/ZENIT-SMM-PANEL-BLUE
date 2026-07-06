@@ -884,10 +884,10 @@ export function AddFunds() {
                             <td className="py-4 px-4">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase border ${
                                 r.status === 'Pending' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
-                                r.status === 'Success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                                (r.status === 'Success' || r.status === 'Approved') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
                                 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                               }`}>
-                                {r.status}
+                                {r.status === 'Success' ? 'Approved' : r.status}
                               </span>
                             </td>
                             <td className="py-4 px-4 text-gray-400 max-w-xs truncate" title={r.adminNote}>{r.adminNote || <span className="italic text-gray-600">Awaiting admin review</span>}</td>

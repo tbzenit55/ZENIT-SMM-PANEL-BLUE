@@ -248,7 +248,10 @@ export default function AdminWallets() {
                           r.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           r.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (r.referenceId && r.referenceId.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchStatus = statusFilter === 'all' || r.status === statusFilter;
+      const matchStatus = statusFilter === 'all' || 
+                          r.status === statusFilter ||
+                          (statusFilter === 'Success' && r.status === 'Approved') ||
+                          (statusFilter === 'Approved' && r.status === 'Success');
       return matchSearch && matchStatus;
     });
   };
@@ -571,10 +574,10 @@ export default function AdminWallets() {
                           <td className="py-4 px-6">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase border ${
                               r.status === 'Pending' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
-                              r.status === 'Success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                              (r.status === 'Success' || r.status === 'Approved') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
                               'bg-rose-500/10 border-rose-500/20 text-rose-500'
                             }`}>
-                              {r.status}
+                              {r.status === 'Success' ? 'Approved' : r.status}
                             </span>
                           </td>
                           <td className="py-4 px-6 text-right space-x-2">

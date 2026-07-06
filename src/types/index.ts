@@ -283,10 +283,13 @@ export interface WalletRequest {
   userEmail: string;
   amount: number;
   paymentMethod: string;
-  status: 'Pending' | 'Success' | 'Rejected' | 'Cancelled';
+  status: 'Pending' | 'Success' | 'Approved' | 'Rejected' | 'Cancelled';
   referenceId?: string;
   screenshotUrl?: string;
   adminNote?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }

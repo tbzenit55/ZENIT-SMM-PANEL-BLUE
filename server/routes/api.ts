@@ -2081,8 +2081,23 @@ router.post('/admin/deposit-requests/:id/resolve', requireAdmin, async (req: Aut
     }
 
     const now = new Date().toISOString();
+    const adminEmail = req.user?.email || 'admin@zenitsmm.com';
     
     if (action === 'approve') {
+      // Strict UTR uniqueness validation on approval
+      if (depositReq.referenceId && depositReq.referenceId.trim() !== '') {
+        const ref = depositReq.referenceId.trim().toLowerCase();
+        const otherApproved = reqs.find(
+          r => r.id !== id && 
+               r.referenceId && 
+               r.referenceId.trim().toLowerCase() === ref && 
+               (r.status === 'Success' || r.status === 'Approved')
+        );
+        if (otherApproved) {
+          return res.status(400).json({ error: `Approval failed: A deposit with UTR "${depositReq.referenceId}" was already approved previously.` });
+        }
+      }
+
       // Perform atomic credit using transactions
       await executeBalanceUpdate(depositReq.userId, 'Deposit', depositReq.amount, {
         paymentMethod: depositReq.paymentMethod,
@@ -2092,12 +2107,18 @@ router.post('/admin/deposit-requests/:id/resolve', requireAdmin, async (req: Aut
         status: 'Success'
       });
 
-      depositReq.status = 'Success';
+      depositReq.status = 'Success'; // Success is treated as Approved
+      depositReq.resolvedBy = adminEmail;
+      depositReq.resolvedAt = now;
+      depositReq.adminNote = adminNote || 'Deposit approved by administrator';
     } else {
       depositReq.status = 'Rejected';
+      depositReq.resolvedBy = adminEmail;
+      depositReq.resolvedAt = now;
+      depositReq.rejectionReason = adminNote || 'Deposit rejected by administrator';
+      depositReq.adminNote = adminNote || 'Deposit rejected by administrator';
     }
 
-    depositReq.adminNote = adminNote || '';
     depositReq.updatedAt = now;
 
     await saveWalletRequest(depositReq);
@@ -2112,7 +2133,7 @@ router.post('/admin/deposit-requests/:id/resolve', requireAdmin, async (req: Aut
       createdAt: now
     });
 
-    return res.json({ success: true, message: `Deposit request successfully ${action}d.`, request: depositReq });
+    return res.json({ success: true, message: `Deposit request successfully ${action === 'approve' ? 'approved' : 'rejected'}.`, request: depositReq });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
