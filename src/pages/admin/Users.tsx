@@ -57,7 +57,7 @@ export function UsersList() {
   const [createEmail, setCreateEmail] = useState('');
   const [createDisplayName, setCreateDisplayName] = useState('');
   const [createRole, setCreateRole] = useState<'Super Admin' | 'Admin' | 'User'>('User');
-  const [createBalance, setCreateBalance] = useState('100.00');
+  const [createBalance, setCreateBalance] = useState('0.00');
   const [createStatus, setCreateStatus] = useState<'Active' | 'Suspended' | 'Banned'>('Active');
 
   // Permisison selection simulation (Role management module)
@@ -235,7 +235,7 @@ export function UsersList() {
       setCreateEmail('');
       setCreateDisplayName('');
       setCreateRole('User');
-      setCreateBalance('100.00');
+      setCreateBalance('0.00');
       setCreateStatus('Active');
 
       await loadUsers();
