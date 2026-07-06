@@ -33,19 +33,21 @@ export function initializeFirebaseAdmin(): boolean {
       return true;
     }
 
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.FIREBASE_PROJECT_ID) {
+    // In container environments like Cloud Run, we can automatically initialize using Application Default Credentials (ADC) without explicit env vars.
+    try {
       initializeApp({
         projectId: projectId
       });
-      console.log('Firebase Admin initialized with local environment configuration.');
+      console.log('Firebase Admin initialized with container default environment configuration.');
       isFirebaseAdminInitialized = true;
       return true;
+    } catch (fallbackErr) {
+      console.warn(
+        '⚠️  Firebase Admin Credentials not fully configured, and container ADC initialization failed. API endpoints will run in sandbox mode with in-memory persistence.',
+        fallbackErr
+      );
+      return false;
     }
-
-    console.warn(
-      '⚠️  Firebase Admin Credentials not fully configured. API endpoints will run in sandbox mode with in-memory persistence.'
-    );
-    return false;
   } catch (err) {
     console.error('Failed to initialize Firebase Admin SDK:', err);
     return false;

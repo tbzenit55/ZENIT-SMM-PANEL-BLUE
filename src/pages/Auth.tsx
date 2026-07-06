@@ -14,7 +14,7 @@ import {
   signOut
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { getClientAuth, getClientDb } from '../lib/firebase';
+import { getClientAuth, getClientDb, handleFirestoreError, OperationType } from '../lib/firebase';
 import { useToast } from '../components/Toast';
 import { Loader } from '../components/Loader';
 import { useAuth } from '../contexts/AuthContext';
@@ -162,17 +162,21 @@ export function Auth() {
             uid: user.uid,
             email: user.email,
             displayName: data.fullName,
+            name: data.fullName, // Backward compatibility with codebase
             role: "user",
             status: "active",
             walletBalance: 0,
+            balance: 0, // Backward compatibility with codebase
+            totalSpent: 0,
+            totalOrders: 0,
+            phone: data.phone || '',
+            emailVerified: true,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           }
         );
       } catch (firestoreErr: any) {
-        console.error('Firestore profile creation failed:', firestoreErr);
-        // Throw detailed error to be caught by the outer catch block
-        throw new Error(`Firestore Profile Creation Failed: ${firestoreErr.message || JSON.stringify(firestoreErr)}`);
+        handleFirestoreError(firestoreErr, OperationType.WRITE, "users/" + user.uid);
       }
       
       // Update display name in Firebase Auth profile

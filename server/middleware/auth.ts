@@ -34,6 +34,8 @@ export async function requireAuth(req: AuthenticatedRequest, res: Response, next
           role = uRole;
         } else if (uRole === 'admin') {
           role = 'Admin';
+        } else if (uRole === 'user') {
+          role = 'User';
         }
 
         // Session validation / Force logout support
