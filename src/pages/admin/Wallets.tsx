@@ -529,6 +529,7 @@ export default function AdminWallets() {
                       <th className="py-4 px-6">Method</th>
                       <th className="py-4 px-6">Amount</th>
                       <th className="py-4 px-6">Reference Code</th>
+                      <th className="py-4 px-6">Screenshot</th>
                       <th className="py-4 px-6">Status</th>
                       <th className="py-4 px-6 text-right">Actions</th>
                     </tr>
@@ -536,7 +537,7 @@ export default function AdminWallets() {
                   <tbody className="divide-y divide-[#1E293B]/10">
                     {getFilteredRequests().length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-12 text-center">
+                        <td colSpan={8} className="py-12 text-center">
                           <AlertCircle className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                           <p className="text-gray-400 text-sm font-sans">No pending or matching deposit requests found.</p>
                         </td>
@@ -552,6 +553,21 @@ export default function AdminWallets() {
                           <td className="py-4 px-6 font-mono text-[11px] text-gray-400 capitalize">{r.paymentMethod}</td>
                           <td className="py-4 px-6 font-bold text-gray-200">${r.amount.toFixed(2)}</td>
                           <td className="py-4 px-6 font-mono text-xs text-gray-400">{r.referenceId || <span className="italic text-gray-600">none</span>}</td>
+                          <td className="py-4 px-6">
+                            {r.screenshotUrl ? (
+                              <a
+                                href={r.screenshotUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-8 h-8 rounded border border-blue-900/20 overflow-hidden hover:scale-105 transition-transform"
+                                title="Click to view full image"
+                              >
+                                <img src={r.screenshotUrl} className="w-full h-full object-cover" alt="receipt" />
+                              </a>
+                            ) : (
+                              <span className="text-gray-600 italic">No image</span>
+                            )}
+                          </td>
                           <td className="py-4 px-6">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase border ${
                               r.status === 'Pending' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
@@ -881,6 +897,27 @@ export default function AdminWallets() {
                     <span className="font-semibold block text-gray-300">Reference / Hash Code:</span>
                     <span className="font-mono mt-0.5 block select-all">{selectedRequest.referenceId || 'N/A'}</span>
                   </div>
+                  {selectedRequest.screenshotUrl && (
+                    <div className="pt-2 border-t border-gray-800/20">
+                      <span className="font-semibold block text-gray-300 mb-1">Uploaded Screenshot:</span>
+                      <a 
+                        href={selectedRequest.screenshotUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block rounded-lg overflow-hidden border border-blue-500/20 max-h-48 bg-[#06080E] relative group"
+                        title="Click to open image in new tab"
+                      >
+                        <img 
+                          src={selectedRequest.screenshotUrl} 
+                          className="w-full h-full object-contain max-h-48" 
+                          alt="Uploaded Payment Receipt" 
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <span className="text-[10px] text-white font-mono bg-blue-600 px-2 py-1 rounded">View Fullscreen ↗</span>
+                        </div>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Approve or Reject Selection */}

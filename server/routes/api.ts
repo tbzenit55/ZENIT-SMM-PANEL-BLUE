@@ -1865,7 +1865,7 @@ router.get('/wallet/transactions', requireAuth, async (req: AuthenticatedRequest
 // Submit a manual deposit request
 router.post('/wallet/deposit', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   const uid = req.user?.uid;
-  const { amount, paymentMethod, referenceId } = req.body;
+  const { amount, paymentMethod, referenceId, screenshotUrl } = req.body;
 
   if (!uid) {
     return res.status(401).json({ error: 'Unauthenticated.' });
@@ -1893,12 +1893,57 @@ router.post('/wallet/deposit', requireAuth, async (req: AuthenticatedRequest, re
       return res.status(403).json({ error: 'Your wallet is frozen. Deposit requests are disabled.' });
     }
 
-    // Prevent duplicate submission check (optional but robust referenceId check)
-    if (referenceId && referenceId.trim() !== '') {
+    // Retrieve active custom payment methods configuration
+    const methods = await getCustomPaymentMethods();
+    const selectedMethod = methods.find(m => m.id === paymentMethod);
+    if (!selectedMethod) {
+      return res.status(400).json({ error: 'Selected payment method is invalid or not configured.' });
+    }
+
+    if (!selectedMethod.enabled) {
+      return res.status(400).json({ error: 'This payment method is currently disabled.' });
+    }
+
+    // Validate min/max limits
+    if (amt < selectedMethod.minDeposit) {
+      return res.status(400).json({ error: `The minimum deposit threshold for ${selectedMethod.name} is $${selectedMethod.minDeposit.toFixed(2)} USD.` });
+    }
+
+    if (amt > selectedMethod.maxDeposit) {
+      return res.status(400).json({ error: `The maximum deposit limit for ${selectedMethod.name} is $${selectedMethod.maxDeposit.toFixed(2)} USD.` });
+    }
+
+    // Validate UPI specific rules (PhonePe, Google Pay, Paytm, UPI)
+    const isUpiMethod = ['upi', 'phonepe', 'gpay', 'paytm'].includes(paymentMethod);
+    
+    // Strict UTR validation
+    const ref = referenceId ? referenceId.trim() : '';
+    if (isUpiMethod) {
+      if (!ref) {
+        return res.status(400).json({ error: 'UTR number is required for UPI payments.' });
+      }
+      if (!/^\d{12}$/.test(ref)) {
+        return res.status(400).json({ error: 'Invalid UTR Number. A valid UPI transaction UTR must be exactly 12 digits.' });
+      }
+    } else {
+      if (!ref) {
+        return res.status(400).json({ error: 'Reference ID / Transaction ID is required.' });
+      }
+    }
+
+    // Strict Screenshot validation (Reject empty screenshots)
+    if (!screenshotUrl || screenshotUrl.trim() === '') {
+      return res.status(400).json({ error: 'Payment receipt screenshot is required. Please upload your payment screenshot.' });
+    }
+
+    // Prevent duplicate UTR submission check against any success/pending requests
+    if (ref !== '') {
       const existingReqs = await getWalletRequests();
-      const duplicate = existingReqs.find(r => r.referenceId === referenceId && r.status !== 'Rejected');
+      const duplicate = existingReqs.find(
+        r => r.referenceId && r.referenceId.trim().toLowerCase() === ref.toLowerCase() && r.status !== 'Rejected'
+      );
       if (duplicate) {
-        return res.status(400).json({ error: 'A deposit request with this reference ID is already registered or pending.' });
+        return res.status(400).json({ error: `A deposit request with UTR "${ref}" is already registered or pending review.` });
       }
     }
 
@@ -1908,7 +1953,8 @@ router.post('/wallet/deposit', requireAuth, async (req: AuthenticatedRequest, re
       userEmail: user.email,
       amount: Number(amt.toFixed(4)),
       paymentMethod,
-      referenceId: referenceId || '',
+      referenceId: ref,
+      screenshotUrl: screenshotUrl || '',
       status: 'Pending',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -1922,7 +1968,7 @@ router.post('/wallet/deposit', requireAuth, async (req: AuthenticatedRequest, re
       type: 'activity',
       userId: uid,
       userEmail: user.email,
-      action: `Submitted deposit request of $${newReq.amount.toFixed(2)} via ${paymentMethod}`,
+      action: `Submitted deposit request of $${newReq.amount.toFixed(2)} via ${selectedMethod.name}`,
       createdAt: new Date().toISOString()
     });
 

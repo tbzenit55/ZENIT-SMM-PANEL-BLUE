@@ -285,6 +285,7 @@ export interface WalletRequest {
   paymentMethod: string;
   status: 'Pending' | 'Success' | 'Rejected' | 'Cancelled';
   referenceId?: string;
+  screenshotUrl?: string;
   adminNote?: string;
   createdAt: string;
   updatedAt: string;

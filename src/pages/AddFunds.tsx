@@ -26,7 +26,9 @@ import {
   QrCode,
   Coins,
   Copy,
-  ExternalLink
+  ExternalLink,
+  UploadCloud,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export function AddFunds() {
@@ -61,6 +63,14 @@ export function AddFunds() {
   // Form states
   const [amount, setAmount] = useState('');
   const [referenceId, setReferenceId] = useState('');
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotUrl, setScreenshotUrl] = useState('');
+
+  // Clear screenshot states when payment method changes
+  useEffect(() => {
+    setScreenshotFile(null);
+    setScreenshotUrl('');
+  }, [selectedMethod]);
 
   // Fetch customizable payment methods
   const loadPaymentMethods = async () => {
@@ -131,6 +141,29 @@ export function AddFunds() {
     success('Dashboard Synced', 'Your balance and transaction history are up to date.');
   };
 
+  // File change handler to convert to base64
+  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      error('Invalid File Type', 'Please select a valid image file (PNG, JPG, JPEG).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      error('File Too Large', 'Maximum screenshot size is 5MB.');
+      return;
+    }
+
+    setScreenshotFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setScreenshotUrl(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Submit deposit request
   const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,18 +190,45 @@ export function AddFunds() {
       return;
     }
 
+    const isUpiMethod = ['upi', 'phonepe', 'gpay', 'paytm'].includes(selectedMethod.id);
+    const ref = referenceId ? referenceId.trim() : '';
+
+    if (isUpiMethod) {
+      if (!ref) {
+        error('UTR Required', 'Please enter your 12-digit UPI reference ID / UTR.');
+        return;
+      }
+      if (!/^\d{12}$/.test(ref)) {
+        error('Invalid UTR Format', 'UTR must be exactly 12 numeric digits.');
+        return;
+      }
+    } else {
+      if (!ref) {
+        error('Reference ID Required', 'Please enter your Transaction Reference ID.');
+        return;
+      }
+    }
+
+    if (!screenshotUrl) {
+      error('Screenshot Required', 'Please upload a screenshot of your payment receipt.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await api.post<{ success: boolean; message: string; request: WalletRequest }>('/wallet/deposit', {
         amount: depAmt,
         paymentMethod: selectedMethod.id,
-        referenceId: referenceId || undefined
+        referenceId: ref,
+        screenshotUrl: screenshotUrl
       });
       
       if (res.data.success) {
         success('Request Logged', 'Manual payment deposit requested successfully. Administrators are reviewing.');
         setAmount('');
         setReferenceId('');
+        setScreenshotFile(null);
+        setScreenshotUrl('');
         setActiveSubTab('requests'); // Switch to active requests log
         await loadWalletStats();
         await loadTabData();
@@ -499,6 +559,50 @@ export function AddFunds() {
                             Needed for admin verification
                           </span>
                         </div>
+
+                        {/* Screenshot Upload Block */}
+                        <div className="col-span-1 sm:col-span-2 border-t border-blue-900/10 pt-4 mt-2">
+                          <label className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2.5">
+                            Upload Payment Screenshot
+                          </label>
+                          <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <div className="w-full">
+                              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-900/20 hover:border-blue-500/40 bg-[#06080E]/60 rounded-xl cursor-pointer transition-all hover:bg-[#080B14]">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                  <UploadCloud className="w-8 h-8 text-blue-500/70 mb-2" />
+                                  <p className="text-xs text-gray-300 font-medium">
+                                    {screenshotFile ? screenshotFile.name : 'Choose receipt image'}
+                                  </p>
+                                  <p className="text-[10px] text-gray-500 font-mono mt-1">
+                                    Drag-and-drop or click to browse (Max 5MB)
+                                  </p>
+                                </div>
+                                <input
+                                  id="screenshot-file-input"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleScreenshotChange}
+                                  disabled={!!wallet?.isFrozen}
+                                  className="hidden"
+                                  required
+                                />
+                              </label>
+                            </div>
+                            
+                            {screenshotUrl && (
+                              <div className="w-32 h-32 shrink-0 bg-[#080B14] rounded-xl border border-blue-900/15 p-1.5 flex items-center justify-center relative overflow-hidden group">
+                                <img
+                                  src={screenshotUrl}
+                                  alt="Payment Screenshot Preview"
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                  <span className="text-[10px] text-white font-mono">Uploaded</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -565,19 +669,28 @@ export function AddFunds() {
                       </div>
                     )}
 
-                    {selectedMethod.qrImageUrl && (
+                     {(selectedMethod.qrImageUrl || (['upi', 'phonepe', 'gpay', 'paytm'].includes(selectedMethod.id) && selectedMethod.upiId)) && (
                       <div className="bg-[#080B14] p-4 rounded-xl border border-blue-900/15 text-center space-y-2.5">
                         <span className="text-[9px] font-mono font-bold text-gray-500 uppercase tracking-widest block">
                           Scan to Pay QR Code
                         </span>
                         <div className="relative aspect-square w-40 mx-auto bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden border border-blue-500/10 shadow-[0_0_15px_rgba(37,99,235,0.05)]">
                           <img
-                            src={selectedMethod.qrImageUrl}
+                            src={
+                              ['upi', 'phonepe', 'gpay', 'paytm'].includes(selectedMethod.id)
+                                ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                                    `upi://pay?pa=${selectedMethod.upiId}&pn=Zenit%20SMM%20Panel${parseFloat(amount) > 0 ? `&am=${parseFloat(amount).toFixed(2)}` : ''}&cu=INR`
+                                  )}`
+                                : selectedMethod.qrImageUrl
+                            }
                             alt={`${selectedMethod.name} QR Code`}
                             className="w-full h-full object-contain"
                             referrerPolicy="no-referrer"
                           />
                         </div>
+                        <p className="text-[9px] text-amber-400 font-mono font-bold animate-pulse">
+                          {parseFloat(amount) > 0 ? `QR Configured for $${parseFloat(amount).toFixed(2)}` : 'Scan to pay any amount'}
+                        </p>
                         <p className="text-[9px] text-gray-500 font-mono">
                           Open your camera or payment app to scan
                         </p>
@@ -733,6 +846,7 @@ export function AddFunds() {
                         <th className="py-3 px-4">Gateway</th>
                         <th className="py-3 px-4">Amount</th>
                         <th className="py-3 px-4">Reference ID</th>
+                        <th className="py-3 px-4">Screenshot</th>
                         <th className="py-3 px-4">Status</th>
                         <th className="py-3 px-4">Review Notes</th>
                         <th className="py-3 px-4">Date</th>
@@ -741,7 +855,7 @@ export function AddFunds() {
                     <tbody className="divide-y divide-blue-900/5 text-xs">
                       {requests.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-12 text-center">
+                          <td colSpan={8} className="py-12 text-center">
                             <AlertCircle className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                             <p className="text-gray-400 text-sm">No deposit requests logged in this system.</p>
                           </td>
@@ -753,6 +867,20 @@ export function AddFunds() {
                             <td className="py-4 px-4 font-mono text-[11px] text-gray-400 capitalize">{r.paymentMethod}</td>
                             <td className="py-4 px-4 font-bold text-gray-200">${r.amount.toFixed(2)}</td>
                             <td className="py-4 px-4 font-mono text-gray-500">{r.referenceId || <span className="italic text-gray-600">none</span>}</td>
+                            <td className="py-4 px-4">
+                              {r.screenshotUrl ? (
+                                <a
+                                  href={r.screenshotUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block w-8 h-8 rounded border border-blue-900/20 overflow-hidden hover:scale-105 transition-transform"
+                                >
+                                  <img src={r.screenshotUrl} className="w-full h-full object-cover" alt="receipt" />
+                                </a>
+                              ) : (
+                                <span className="text-gray-600 italic">No image</span>
+                              )}
+                            </td>
                             <td className="py-4 px-4">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase border ${
                                 r.status === 'Pending' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
